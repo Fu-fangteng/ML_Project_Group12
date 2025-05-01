@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler,OneHotEncoder
 import os
 
 # 设置文件路径
@@ -40,19 +40,38 @@ print(f"\n删除重复数据后，数据集大小从 {len(df)} 减少到 {len(df
 df_cleaned['ID'] = range(1, len(df_cleaned) + 1)
 print("\n已添加ID列")
 
+
 # 进行one-hot编码
 # 假设'Class'是分类变量列
 if 'Class' in df_cleaned.columns:
-    # 对Class列进行one-hot编码
-    df_encoded = pd.get_dummies(df_cleaned, columns=['Class'])
-    print("\nOne-hot编码后的列名：")
-    print(df_encoded.columns.tolist())
+    encoder = OneHotEncoder(sparse_output=False, drop=None)  # drop='first' 可以防止虚拟变量陷阱
+
+    # 对 'Class' 列进行编码
+    class_encoded = encoder.fit_transform(df_cleaned[['Class']])
+
+    # 获取新的列名
+    class_encoded_cols = encoder.get_feature_names_out(['Class'])
+
+    # 将编码结果转为 DataFrame
+    class_encoded_df = pd.DataFrame(class_encoded, columns=class_encoded_cols, index=df_cleaned.index)
+
+    # 合并原数据（去除原来的 'Class' 列）与编码后的列
+    df_encoded = pd.concat([df_cleaned.drop(columns=['Class']), class_encoded_df], axis=1)
+
+
+
+
+
+col = df_encoded.pop('ID')
+df_encoded.insert(0, 'ID', col)
 
 # 数据标准化
 # 获取数值型列（排除ID列和one-hot编码后的列）
-numeric_columns = df_encoded.select_dtypes(include=['float64', 'int64']).columns
+numeric_columns = df_encoded.columns[0:16]
 if 'ID' in numeric_columns:
     numeric_columns = numeric_columns.drop('ID')
+
+
 
 # 创建标准化器
 scaler = StandardScaler()
@@ -62,7 +81,7 @@ df_encoded[numeric_columns] = scaler.fit_transform(df_encoded[numeric_columns])
 print("\n已完成数据标准化（使用StandardScaler）")
 print("标准化后的数据统计：")
 print(df_encoded[numeric_columns].describe())
-    
+
 # 保存处理后的数据
 df_encoded.to_csv(output_file, index=False)
 print(f"\n处理后的数据已保存到 {output_file}")
