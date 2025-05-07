@@ -47,7 +47,7 @@ if 'Class' in df_cleaned.columns:
     encoder = OneHotEncoder(sparse_output=False, drop=None)  # drop='first' 可以防止虚拟变量陷阱
 
     # 对 'Class' 列进行编码
-    class_encoded = encoder.fit_transform(df_cleaned[['Class']])
+    class_encoded = encoder.fit_transform(df_cleaned[['Class']]).astype(int)
 
     # 获取新的列名
     class_encoded_cols = encoder.get_feature_names_out(['Class'])
