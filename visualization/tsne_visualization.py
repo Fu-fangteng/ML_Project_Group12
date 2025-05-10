@@ -1,58 +1,53 @@
+import os
 import pandas as pd
 import numpy as np
 from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import os
+import plotly.express as px
 
-# 设置文件路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-preprocessing_dir = os.path.join(os.path.dirname(current_dir), 'preprocessing')
-data_file = os.path.join(preprocessing_dir, 'processed_data.csv')
+def tsne_visualize(data_file, output_dir='tsne_plots', perplexity=30, n_iter=1000, random_state=42):
+    """
+    对指定CSV文件执行t-SNE降维，并生成交互式2D和3D可视化图。
 
-# 读取处理后的数据
-df = pd.read_csv(data_file)
+    参数:
+        data_file (str): 预处理后CSV文件路径
+        output_dir (str): 输出交互图的HTML保存路径
+        perplexity (int): t-SNE中的perplexity参数
+        n_iter (int): t-SNE迭代次数
+        random_state (int): 随机种子
 
-# 获取特征列（排除ID列和Class相关的列）
-feature_columns = [col for col in df.columns if col != 'ID' and not col.startswith('Class_')]
-X = df[feature_columns].values
+    输出:
+        HTML交互式图像保存在output_dir中
+    """
+    # 读取数据
+    df = pd.read_csv(data_file)
 
-# 获取类别标签
-class_columns = [col for col in df.columns if col.startswith('Class_')]
-y = df[class_columns].values.argmax(axis=1)  # 将one-hot编码转换回类别索引
+    # 特征和标签处理
+    feature_columns = [col for col in df.columns if col != 'ID' and not col.startswith('Class_')]
+    class_columns = [col for col in df.columns if col.startswith('Class_')]
+    X = df[feature_columns].values
+    y = df[class_columns].values.argmax(axis=1)
 
-# 执行t-SNE降维
-print("执行t-SNE降维...")
-tsne_2d = TSNE(n_components=2, random_state=42)
-X_2d = tsne_2d.fit_transform(X)
+    # t-SNE 降维
+    print("执行t-SNE降维...")
+    tsne = TSNE(n_components=3, perplexity=perplexity, max_iter=n_iter, random_state=random_state)
+    X_embedded = tsne.fit_transform(X)
 
-tsne_3d = TSNE(n_components=3, random_state=42)
-X_3d = tsne_3d.fit_transform(X)
+    # 结果DataFrame
+    df_embedded = pd.DataFrame(X_embedded, columns=['TSNE1', 'TSNE2', 'TSNE3'])
+    df_embedded['Class'] = y.astype(str)
 
-# 创建可视化目录
-output_dir = os.path.join(current_dir, 'tsne_plots')
-os.makedirs(output_dir, exist_ok=True)
+    # 创建输出目录
+    os.makedirs(output_dir, exist_ok=True)
 
-# 2D可视化
-plt.figure(figsize=(10, 8))
-scatter = plt.scatter(X_2d[:, 0], X_2d[:, 1], c=y, cmap='viridis', alpha=0.6)
-plt.colorbar(scatter)
-plt.title('t-SNE 2D Visualization')
-plt.xlabel('t-SNE 1')
-plt.ylabel('t-SNE 2')
-plt.savefig(os.path.join(output_dir, 'tsne_2d.png'))
-plt.close()
+    # 2D 可视化
+    fig_2d = px.scatter(df_embedded, x='TSNE1', y='TSNE2', color='Class',
+                        title='t-SNE 2D Interactive Visualization', width=900, height=700)
+    fig_2d.write_html(os.path.join(output_dir, 'tsne_2d_interactive.html'))
 
-# 3D可视化
-fig = plt.figure(figsize=(10, 8))
-ax = fig.add_subplot(111, projection='3d')
-scatter = ax.scatter(X_3d[:, 0], X_3d[:, 1], X_3d[:, 2], c=y, cmap='viridis', alpha=0.6)
-plt.colorbar(scatter)
-ax.set_title('t-SNE 3D Visualization')
-ax.set_xlabel('t-SNE 1')
-ax.set_ylabel('t-SNE 2')
-ax.set_zlabel('t-SNE 3')
-plt.savefig(os.path.join(output_dir, 'tsne_3d.png'))
-plt.close()
+    # 3D 可视化
+    fig_3d = px.scatter_3d(df_embedded, x='TSNE1', y='TSNE2', z='TSNE3', color='Class',
+                           title='t-SNE 3D Interactive Visualization', width=900, height=700)
+    fig_3d.write_html(os.path.join(output_dir, 'tsne_3d_interactive.html'))
 
-print(f"可视化结果已保存到 {output_dir} 目录") 
+    print(f"交互式可视化图已保存至：{output_dir}")
+
