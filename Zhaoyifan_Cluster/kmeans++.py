@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import OPTICS
+from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+
 from sklearn.metrics import (
     adjusted_rand_score,
     normalized_mutual_info_score,
@@ -13,20 +14,17 @@ from sklearn.metrics import (
     davies_bouldin_score
 )
 
-
-df = pd.read_csv('/Users/qiaoqian./Desktop/ML_Project/preprocessing/processed_data_label_encoding.csv')  # 请替换为你的绝对路径
+# 读取数据
+df = pd.read_csv('/Users/qiaoqian./Desktop/ML_Project/preprocessing/processed_data_label_encoding.csv')
 X = df.iloc[:, 1:17].values
 y_true = df.iloc[:, -1].values
 
-# === 3. OPTICS 聚类 ===
-optics = OPTICS(min_samples=5, xi=0.1, min_cluster_size=0.05)
-optics.fit(X)
-labels = optics.labels_
+# === 聚类 ===
+kmeans = KMeans(n_clusters=8, init='k-means++', random_state=42)
+labels = kmeans.fit_predict(X)
 
 # 打印每个类别的数量
 unique_labels, counts = np.unique(labels, return_counts=True)
-
-# 显示聚类类别及其数量
 for label, count in zip(unique_labels, counts):
     print(f"Cluster {label}: {count} points")
 
@@ -42,25 +40,23 @@ print(f"Silhouette Score: {silhouette_score(X, labels):.4f}")
 print(f"Calinski-Harabasz Index: {calinski_harabasz_score(X, labels):.4f}")
 print(f"Davies-Bouldin Index: {davies_bouldin_score(X, labels):.4f}")
 
-# === 4. t-SNE 降维 ===
+# === 降维可视化 ===
 tsne = TSNE(n_components=2, perplexity=30, random_state=42)
 X_tsne = tsne.fit_transform(X)
 
-
-# === 5. 可视化聚类结果 ===
 plt.figure(figsize=(10, 5))
 
 # 聚类结果
 plt.subplot(1, 2, 1)
 plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=labels, cmap='tab10', s=20)
-plt.title('OPTICS Cluste（t-SNE）')
+plt.title('K-means Cluster (t-SNE)')
 plt.xlabel('t-SNE1')
 plt.ylabel('t-SNE2')
 
-# 原始标签（可选）
+# 原始标签
 plt.subplot(1, 2, 2)
 plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=y_true, cmap='tab10', s=20)
-plt.title('Original（t-SNE）')
+plt.title('Original (t-SNE)')
 plt.xlabel('t-SNE1')
 plt.ylabel('t-SNE2')
 
