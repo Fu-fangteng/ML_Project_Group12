@@ -60,8 +60,6 @@ if 'Class' in df_cleaned.columns:
 
 
 
-
-
 col = df_encoded.pop('ID')
 df_encoded.insert(0, 'ID', col)
 
