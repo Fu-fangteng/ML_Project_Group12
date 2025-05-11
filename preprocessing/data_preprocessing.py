@@ -59,6 +59,7 @@ if 'Class' in df_cleaned.columns:
     df_encoded = pd.concat([df_cleaned.drop(columns=['Class']), class_encoded_df], axis=1)
 
 
+
 col = df_encoded.pop('ID')
 df_encoded.insert(0, 'ID', col)
 
