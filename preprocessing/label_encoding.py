@@ -19,4 +19,4 @@ data.drop(data.columns[-8:-1], axis=1, inplace=True)
 print(data.head())
 
 # 你可以选择将新的标签编码保存为csv文件
-data.to_csv('processed_data_label_encoding.csv', index=False)
+data.to_csv('processed_data_label_encoding.csv', index = False)
