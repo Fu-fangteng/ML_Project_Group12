@@ -12,7 +12,8 @@ from sklearn.metrics import (
     calinski_harabasz_score,
     davies_bouldin_score
 )
-
+from Cluster_evaluation import Cluster_Evaluation
+from interactive_visualization import tsne_visualize
 
 df = pd.read_csv('/Users/qiaoqian./Desktop/ML_Project/preprocessing/processed_data_label_encoding.csv')  # 请替换为你的绝对路径
 X = df.iloc[:, 1:17].values
@@ -30,17 +31,7 @@ unique_labels, counts = np.unique(labels, return_counts=True)
 for label, count in zip(unique_labels, counts):
     print(f"Cluster {label}: {count} points")
 
-# === 外部指标 ===
-print("\n--- External Evaluation Metrics ---")
-print(f"Adjusted Rand Index (ARI): {adjusted_rand_score(y_true, labels):.4f}")
-print(f"Normalized Mutual Information (NMI): {normalized_mutual_info_score(y_true, labels):.4f}")
-print(f"Fowlkes-Mallows Index (FMI): {fowlkes_mallows_score(y_true, labels):.4f}")
-
-# === 内部指标 ===
-print("\n--- Internal Evaluation Metrics ---")
-print(f"Silhouette Score: {silhouette_score(X, labels):.4f}")
-print(f"Calinski-Harabasz Index: {calinski_harabasz_score(X, labels):.4f}")
-print(f"Davies-Bouldin Index: {davies_bouldin_score(X, labels):.4f}")
+tsne_visualize(data_file="/Users/qiaoqian./Desktop/ML_Project/preprocessing/processed_data_label_encoding.csv")
 
 # === 4. t-SNE 降维 ===
 tsne = TSNE(n_components=2, perplexity=30, random_state=42)

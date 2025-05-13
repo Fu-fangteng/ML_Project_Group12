@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-
+from Cluster_evaluation import Cluster_Evaluation
 from sklearn.metrics import (
     adjusted_rand_score,
     normalized_mutual_info_score,
@@ -13,6 +13,7 @@ from sklearn.metrics import (
     calinski_harabasz_score,
     davies_bouldin_score
 )
+from interactive_visualization import tsne_visualize
 
 # 读取数据
 df = pd.read_csv('/Users/qiaoqian./Desktop/ML_Project/preprocessing/processed_data_label_encoding.csv')
@@ -28,21 +29,13 @@ unique_labels, counts = np.unique(labels, return_counts=True)
 for label, count in zip(unique_labels, counts):
     print(f"Cluster {label}: {count} points")
 
-# === 外部指标 ===
-print("\n--- External Evaluation Metrics ---")
-print(f"Adjusted Rand Index (ARI): {adjusted_rand_score(y_true, labels):.4f}")
-print(f"Normalized Mutual Information (NMI): {normalized_mutual_info_score(y_true, labels):.4f}")
-print(f"Fowlkes-Mallows Index (FMI): {fowlkes_mallows_score(y_true, labels):.4f}")
-
-# === 内部指标 ===
-print("\n--- Internal Evaluation Metrics ---")
-print(f"Silhouette Score: {silhouette_score(X, labels):.4f}")
-print(f"Calinski-Harabasz Index: {calinski_harabasz_score(X, labels):.4f}")
-print(f"Davies-Bouldin Index: {davies_bouldin_score(X, labels):.4f}")
+Cluster_Evaluation(X,y_true,labels)
 
 # === 降维可视化 ===
 tsne = TSNE(n_components=2, perplexity=30, random_state=42)
 X_tsne = tsne.fit_transform(X)
+
+tsne_visualize(data_file="/Users/qiaoqian./Desktop/ML_Project/preprocessing/processed_data_label_encoding.csv")
 
 plt.figure(figsize=(10, 5))
 
