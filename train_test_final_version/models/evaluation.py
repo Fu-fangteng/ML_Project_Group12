@@ -15,17 +15,7 @@ from sklearn.metrics import (
 )
 
 def evaluate_model(model,classes, name,result_dir="evaluation_results"):
-    """
-    Evaluate the model with metrics like accuracy, precision, recall, f1, ROC curve, and confusion matrix.
-    Supports any classifier that has `predict` and `predict_proba` methods.
 
-    Parameters:
-    - model: Trained model to evaluate (e.g., LogisticRegression, SVC, XGBClassifier, etc.).
-    - X_test: Test features.
-    - y_test: True labels for the test data.
-    - classes: List of class labels (or model.classes_ if available).
-    - result_dir: Directory to save the evaluation results (default is 'evaluation_results').
-    """
     # Create result directory if not exists
     os.makedirs(result_dir, exist_ok=True)
 

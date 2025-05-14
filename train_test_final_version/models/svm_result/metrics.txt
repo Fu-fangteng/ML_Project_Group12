@@ -1,0 +1,14 @@
+模型在测试集上的评估结果：
+Accuracy：0.9262
+Precision：0.9264
+Recall：0.9262
+F1 score：0.9262
+
+各类 AUC 值：
+  Class 0: AUC = 1.00
+  Class 1: AUC = 1.00
+  Class 2: AUC = 1.00
+  Class 3: AUC = 0.99
+  Class 4: AUC = 0.99
+  Class 5: AUC = 1.00
+  Class 6: AUC = 0.98

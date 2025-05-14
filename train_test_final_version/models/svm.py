@@ -24,7 +24,7 @@ def svm_classifier(data_path="../train_data.csv"):
     # 特征与标签
     X = df.drop(columns=["ID", "encoded_label"])
     y = df["encoded_label"]
-
+    '''
     # 参数搜索空间
     param_dist = {
         'C': loguniform(1e-4, 1e4),
@@ -33,6 +33,16 @@ def svm_classifier(data_path="../train_data.csv"):
         'gamma': ['scale', 'auto'] + list(np.logspace(-3, 3, 7)),  # 适用于rbf和sigmoid核
         'coef0': [0, 0.1, 0.5, 1]  # 适用于poly和sigmoid核
     }
+    '''
+    # 调整后的参数搜索空间
+    param_dist = {
+        'C': loguniform(1e-1, 1e2),  # 缩小C的范围
+        'kernel': ['linear', 'rbf'],  # 去掉poly和sigmoid核
+        'degree': [3, 4],  # 只保留适用于poly核的degree为3和4
+        'gamma': ['scale', 'auto'],  # 只保留常用的gamma选项
+        'coef0': [0, 0.1]  # 适用于poly和sigmoid核，只保留几个值
+    }
+
 
     # 定义模型和搜索器
     base_clf = SVC(probability=True, random_state=42)
