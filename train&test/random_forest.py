@@ -6,7 +6,7 @@ from tqdm import tqdm
 import os
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import (
     accuracy_score,
@@ -17,12 +17,13 @@ from sklearn.metrics import (
     roc_curve,
     auc
 )
+from scipy.stats import randint
 
 # 创建保存目录
 os.makedirs("results/random_forest", exist_ok=True)
 
 # 读取数据
-df = pd.read_csv("preprocessing/processed_data_label_encoding.csv")
+df = pd.read_csv("../preprocessing/processed_data_label_encoding.csv")
 
 # 特征与标签
 X = df.drop(columns=["ID", "encoded_label"])
@@ -40,9 +41,36 @@ X_train, X_test, y_train, y_test = train_test_split(
 y_train_bin = label_binarize(y_train, classes=classes)
 y_test_bin = label_binarize(y_test, classes=classes)
 
-# 使用随机森林进行多分类
-clf = RandomForestClassifier(n_estimators=100, random_state=42)
-clf.fit(X_train, y_train)
+# 设置超参数搜索空间
+param_dist = {
+    'n_estimators': randint(100, 1000),  # 随机选择100到1000之间的估计器数量
+    'max_features': ['auto', 'sqrt', 'log2'],  # 特征选择方法
+    'max_depth': randint(10, 100),  # 随机选择10到100之间的深度
+    'min_samples_split': randint(2, 10),  # 随机选择2到10之间的最小拆分样本数
+    'min_samples_leaf': randint(1, 10),  # 随机选择1到10之间的叶子节点最小样本数
+    'bootstrap': [True, False]  # 是否使用 bootstrap 采样
+}
+
+# 创建随机森林模型
+rf = RandomForestClassifier(random_state=42)
+
+# 使用 RandomizedSearchCV 来进行超参数调优
+random_search = RandomizedSearchCV(
+    estimator=rf,
+    param_distributions=param_dist,
+    n_iter=10,  # 随机搜索的迭代次数
+    scoring='accuracy',
+    cv=3,
+    verbose=1,
+    n_jobs=1,
+    random_state=42
+)
+
+# 执行随机搜索
+random_search.fit(X_train, y_train)
+
+# 获取最佳的模型
+best_rf = random_search.best_estimator_
 
 # 数据集集合
 datasets = {
@@ -54,8 +82,8 @@ datasets = {
 # 评估 + 可视化函数
 for name in tqdm(datasets, desc="Evaluating datasets"):
     X_set, y_true, y_bin_true = datasets[name]
-    y_pred = clf.predict(X_set)  # 直接预测类别标签
-    y_score = clf.predict_proba(X_set)
+    y_pred = best_rf.predict(X_set)  # 直接预测类别标签
+    y_score = best_rf.predict_proba(X_set)
 
     # 评估指标
     acc = accuracy_score(y_true, y_pred)
@@ -63,7 +91,7 @@ for name in tqdm(datasets, desc="Evaluating datasets"):
     rec = recall_score(y_true, y_pred, average='weighted')
     f1 = f1_score(y_true, y_pred, average='weighted')
 
-    print(f"\n[{name} Set]")
+    print(f"\n[{name} Set] Best Random Forest Model")
     print(f"Accuracy:  {acc:.4f}")
     print(f"Precision: {prec:.4f}")
     print(f"Recall:    {rec:.4f}")
