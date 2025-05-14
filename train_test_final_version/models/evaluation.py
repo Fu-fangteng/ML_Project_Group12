@@ -88,12 +88,3 @@ def evaluate_model(model,classes, name,result_dir="evaluation_results"):
     plt.savefig(os.path.join(result_dir, "confusion_matrix_per_class.png"))
     plt.close()
 
-    # Save the full confusion matrix plot (for multi-class problems)
-    plt.figure(figsize=(8, 7))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Oranges", xticklabels=classes, yticklabels=classes)
-    plt.title("Complete Multi-class Confusion Matrix")
-    plt.xlabel("Predicted Label")
-    plt.ylabel("True Label")
-    plt.tight_layout()
-    plt.savefig(os.path.join(result_dir, "confusion_matrix_full_multi_class.png"))
-    plt.close()
