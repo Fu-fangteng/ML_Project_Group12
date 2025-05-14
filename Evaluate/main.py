@@ -18,5 +18,3 @@ labels_gmm = gmm.fit_predict(X)
 
 hierarchical = AgglomerativeClustering(n_clusters = optimal_n_hierarchical,  metric ='euclidean', linkage='ward')
 labels_hierarchical = hierarchical.fit_predict(X)
-
-optics = 
