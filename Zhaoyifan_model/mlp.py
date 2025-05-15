@@ -5,6 +5,9 @@ from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 
 
+df = pd.read_csv('/Users/qiaoqian./Desktop/ML_Project/preprocessing/processed_data_label_encoding.csv')
+X = df.iloc[:, 1:17].values
+y_true = df.iloc[:, -1].values
 
 # 将数据转换为 PyTorch 的张量（如果数据是 NumPy 数组的话）
 X_tensor = torch.tensor(X)  # 数据矩阵 (num_samples, num_features)
