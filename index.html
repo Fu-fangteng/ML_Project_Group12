@@ -230,23 +230,20 @@
     <script>
         
         // 页面配置数据
-        const pages = {
-            cluster: [
-                { title: "GMM 2D", path: "cluster&evaluation/clustering_plots/GMM_tsne_2d.html", image: "images\GMM_tsne_2d.png" },
-                { title: "GMM 3D", path: "cluster&evaluation/clustering_plots/GMM_tsne_3d.html", image: "images\GMM_tsne_3d.png" },
-                { title: "层次聚类 2D", path: "cluster&evaluation/clustering_plots/Hierarchical_tsne_2d.html", image: "images\Hierarchical_tsne_2d.png" },
-                { title: "层次聚类 3D", path: "cluster&evaluation/clustering_plots/Hierarchical_tsne_3d.html", image: "images\Hierarchical_tsne_3d.png" },
-                { title: "KMeans 2D", path: "cluster&evaluation/clustering_plots/KMeans_tsne_2d.html", image: "images\KMeans_tsne_2d.png" },
-                { title: "KMeans 3D", path: "cluster&evaluation/clustering_plots/KMeans_tsne_3d.html", image: "images\KMeans_tsne_3d.png" }
-            ],
-            visualization: [
-                { title: "交互式 t-SNE 2D", path: "visualization/tsne_plots/tsne_2d_interactive.html" , image: "images\data_2d.png" },
-
-                { title: "交互式 t-SNE 3D", path: "visualization/tsne_plots/tsne_3d_interactive.html" , image: "images\data_2d.png" },
-
-
-            ]
-        };
+            const pages = {
+                cluster: [
+                    { title: "GMM 2D", path: "cluster&evaluation/clustering_plots/GMM_tsne_2d.html", image: "images/GMM_tsne_2d.png" },
+                    { title: "GMM 3D", path: "cluster&evaluation/clustering_plots/GMM_tsne_3d.html", image: "images/GMM_tsne_3d.png" },
+                    { title: "层次聚类 2D", path: "cluster&evaluation/clustering_plots/Hierarchical_tsne_2d.html", image: "images/Hierarchical_tsne_2d.png" },
+                    { title: "层次聚类 3D", path: "cluster&evaluation/clustering_plots/Hierarchical_tsne_3d.html", image: "images/Hierarchical_tsne_3d.png" },
+                    { title: "KMeans 2D", path: "cluster&evaluation/clustering_plots/KMeans_tsne_2d.html", image: "images/KMeans_tsne_2d.png" },
+                    { title: "KMeans 3D", path: "cluster&evaluation/clustering_plots/KMeans_tsne_3d.html", image: "images/KMeans_tsne_3d.png" }
+                ],
+                visualization: [
+                    { title: "交互式 t-SNE 2D", path: "visualization/tsne_plots/tsne_2d_interactive.html", image: "images/data_2d.png" },
+                    { title: "交互式 t-SNE 3D", path: "visualization/tsne_plots/tsne_3d_interactive.html", image: "images/data_2d.png" }
+                ]
+            };
 
         // 创建可视化卡片
             function createCards(section) {
@@ -257,34 +254,52 @@
                     const card = document.createElement('div');
                     card.className = 'viz-card';
 
-                    // 创建图片占位元素
+                    // 创建图片容器
                     const imgContainer = document.createElement('div');
                     imgContainer.className = 'image-loading';
+                    imgContainer.style.height = '180px';
+                    imgContainer.style.borderRadius = '8px';
+                    imgContainer.style.marginBottom = '1rem';
+                    imgContainer.style.overflow = 'hidden';
 
-                    // 预加载图片
+                    // 创建图片元素
                     const img = new Image();
-                    img.src = page.image;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
                     img.alt = page.title;
+
+                    // 图片加载处理
                     img.onload = () => {
                         imgContainer.classList.remove('image-loading');
                         imgContainer.innerHTML = '';
                         imgContainer.appendChild(img);
                     };
+                    img.onerror = () => {
+                        imgContainer.classList.remove('image-loading');
+                        imgContainer.innerHTML = '<div style="color: white; text-align: center">图片加载失败</div>';
+                    };
+                    img.src = page.image;
 
-                    card.innerHTML = `
-                    ${imgContainer.outerHTML}
+                    // 卡片内容
+                    const cardContent = document.createElement('div');
+                    cardContent.innerHTML = `
                     <h3>${page.title}</h3>
                     <p>点击进入可视化空间 →</p>
                 `;
 
+                    // 组装卡片
+                    card.appendChild(imgContainer);
+                    card.appendChild(cardContent);
+
+                    // 点击事件
                     card.addEventListener('click', () => {
                         window.location.href = page.path;
                     });
 
                     content.appendChild(card);
                 });
-            }
-        
+            }       
 
         // 导航交互
         document.querySelectorAll('.nav-link').forEach(link => {
