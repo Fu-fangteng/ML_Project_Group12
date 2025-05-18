@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化空间站</title>
+    <style>
+        :root {
+            --primary-color: #6C5CE7;
+            --secondary-color: #00B894;
+            --bg-gradient: linear-gradient(135deg, #2D3436 0%, #000000 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            transition: all 0.5s ease;
+        }
+
+        /* 动态导航栏 */
+        .nav-panel {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .nav-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .nav-title {
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #00B894, #6C5CE7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleFlow 6s infinite;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem;
+            display: block;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(108, 92, 231, 0.2);
+            transform: translateX(10px);
+        }
+
+        /* 可视化卡片容器 */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            position: relative;
+        }
+
+        /* 动态可视化卡片 */
+        .viz-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent);
+            transition: 0.5s;
+        }
+
+        .viz-card:hover::before {
+            left: 100%;
+        }
+
+        .viz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 动态背景元素 */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 新增图片相关样式 */
+        .viz-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            filter: grayscale(0.3) brightness(0.9);
+        }
+
+        .viz-card:hover img {
+            transform: scale(1.05);
+            filter: grayscale(0) brightness(1);
+        }
+
+        /* 调整原有卡片高度 */
+        .viz-card {
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viz-card h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .viz-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 新增图片加载动画 */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .image-loading {
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0.1) 8%,
+                rgba(255, 255, 255, 0.2) 18%,
+                rgba(255, 255, 255, 0.1) 33%
+            );
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        @keyframes titleFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 导航面板 -->
+        <nav class="nav-panel">
+            <div class="nav-header">
+                <h1 class="nav-title">数据空间站</h1>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#cluster" class="nav-link">聚类与评估</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#visualization" class="nav-link">可视化空间</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 内容区域 -->
+        <main class="content" id="mainContent">
+            <!-- 动态卡片由JavaScript生成 -->
+        </main>
+
+        <!-- 动态背景 -->
+        <canvas class="particles" id="particles"></canvas>
+    </div>
+
+    <script>
+        
+        // 页面配置数据
+        const pages = {
+            cluster: [
+                { title: "GMM 2D", path: "cluster&evaluation/clustering_plots/GMM_tsne_2d.html", image: "images\GMM_tsne_2d.png" },
+                { title: "GMM 3D", path: "cluster&evaluation/clustering_plots/GMM_tsne_3d.html", image: "images\GMM_tsne_3d.png" },
+                { title: "层次聚类 2D", path: "cluster&evaluation/clustering_plots/Hierarchical_tsne_2d.html", image: "images\Hierarchical_tsne_2d.png" },
+                { title: "层次聚类 3D", path: "cluster&evaluation/clustering_plots/Hierarchical_tsne_3d.html", image: "images\Hierarchical_tsne_3d.png" },
+                { title: "KMeans 2D", path: "cluster&evaluation/clustering_plots/KMeans_tsne_2d.html", image: "images\KMeans_tsne_2d.png" },
+                { title: "KMeans 3D", path: "cluster&evaluation/clustering_plots/KMeans_tsne_3d.html", image: "images\KMeans_tsne_3d.png" }
+            ],
+            visualization: [
+                { title: "交互式 t-SNE 2D", path: "visualization/tsne_plots/tsne_2d_interactive.html" , image: "images\data_2d.png" },
+
+                { title: "交互式 t-SNE 3D", path: "visualization/tsne_plots/tsne_3d_interactive.html" , image: "images\data_2d.png" },
+
+
+            ]
+        };
+
+        // 创建可视化卡片
+            function createCards(section) {
+                const content = document.getElementById('mainContent');
+                content.innerHTML = '';
+
+                pages[section].forEach(page => {
+                    const card = document.createElement('div');
+                    card.className = 'viz-card';
+
+                    // 创建图片占位元素
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'image-loading';
+
+                    // 预加载图片
+                    const img = new Image();
+                    img.src = page.image;
+                    img.alt = page.title;
+                    img.onload = () => {
+                        imgContainer.classList.remove('image-loading');
+                        imgContainer.innerHTML = '';
+                        imgContainer.appendChild(img);
+                    };
+
+                    card.innerHTML = `
+                    ${imgContainer.outerHTML}
+                    <h3>${page.title}</h3>
+                    <p>点击进入可视化空间 →</p>
+                `;
+
+                    card.addEventListener('click', () => {
+                        window.location.href = page.path;
+                    });
+
+                    content.appendChild(card);
+                });
+            }
+        
+
+        // 导航交互
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = e.target.getAttribute('href').substring(1);
+                createCards(section);
+            });
+        });
+
+        // 初始化粒子背景
+        function initParticles() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            // 粒子动画逻辑...
+        }
+
+        // 初始化页面
+        createCards('cluster');
+        initParticles();
+    </script>
+</body>
+
+</html>
